@@ -38,7 +38,7 @@ To install, follow the following steps:
 
 * Create a subdirectory named build under directory SphereFitting  
 * Enter subdirectory build  
-* Run cmake .. -DCMAKE_INSTALL_PREFIX=<full path to directory SphereFitting>
+* Run cmake .. -DCMAKE_INSTALL_PREFIX=[full path to directory SphereFitting]
 * Run make
 * Run make install
 
@@ -46,7 +46,7 @@ If all goes well, then you should see an executable inside subdirectory tst.
 
 If CMake fails to find Eigen, then provide the path to the Eigen directory:
 
-* Run cmake .. -DCMAKE_INSTALL_PREFIX=<full path to directory SphereFitting> -DEIGEN3_INCLUDE_DIR=<full path to the Eigen library>
+* Run cmake .. -DCMAKE_INSTALL_PREFIX=[full path to directory SphereFitting] -DEIGEN3_INCLUDE_DIR=[full path to the Eigen library]
 
 ##  LAST UPDATE
 
