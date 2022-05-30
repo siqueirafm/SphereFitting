@@ -1,5 +1,26 @@
 #pragma once
 
+/** 
+ * \file SphereFitting.hpp
+ *
+ * \brief Definition of class \c SphereFitting.
+ *
+ * \author
+ * Marcelo Ferreira Siqueira \n
+ * mfsiqueira at gmail (dot) com
+ *
+ * \version 1.0
+ * \date November 2020
+ *
+ * \attention This program is distributed WITHOUT ANY WARRANTY, and it
+ *            may be freely redistributed under the condition that the
+ *            copyright notices  are not removed,  and no compensation
+ *            is received. Private, research, and institutional use is
+ *            free. Distribution of this  code as part of a commercial
+ *            system  is permissible ONLY  BY DIRECT  ARRANGEMENT WITH
+ *            THE AUTHOR.
+ */
+
 #include <Eigen/Core>
 
 namespace MatchingTools
@@ -58,9 +79,9 @@ namespace MatchingTools
      * \fn SphereFitting()
      *
      * \brief Constructor.
-     * \param i_algorithm A choice for the best sphere fit algorithm.
+     * \param alg A choice for the best sphere fit algorithm.
      */
-    explicit SphereFitting(SphereFittingAlgorithm i_algorithm = SphereFittingAlgorithm::Algebraic);
+    explicit SphereFitting(SphereFittingAlgorithm alg = SphereFittingAlgorithm::Algebraic);
 
     /**
      * \fn run()  
@@ -68,27 +89,27 @@ namespace MatchingTools
      * \brief Computes  center and radius  of a sphere that  best fits
      * the given set of points according  to the best fit criterion of
      * the chosen algorithm.
-     * \param i_points Coordinates of a set of points in space.
+     * \param points Coordinates of a set of points in space.
      * \return Center and radius of a sphere that best fits the points
      * according to the best fit criterion of the chosen algorithm.
      */
-    CenterRadiusPair run(const Matrix3Xf& i_points) const;
+    CenterRadiusPair run(const Matrix3Xf& points) const;
 
   private:
     using Matrix3f = Eigen::Matrix3f;
     
     /** Computes a best sphere fitting using an algebraic approach. */
-    CenterRadiusPair fitSphereUsingAlgebraicApproach(const Matrix3Xf& i_points) const;
+    CenterRadiusPair fitSphereUsingAlgebraicApproach(const Matrix3Xf& points) const;
 
     /** Computes a best sphere fitting using a linear geometric approach. */
-    CenterRadiusPair fitSphereUsingLinearGeometricApproach(const Matrix3Xf& i_points) const;
+    CenterRadiusPair fitSphereUsingLinearGeometricApproach(const Matrix3Xf& points) const;
 
     /** Computes a best sphere fitting using a nonlinear geometric approach. */
-    CenterRadiusPair fitSphereUsingNonLinearGeometricApproach(const Matrix3Xf& i_points) const;
+    CenterRadiusPair fitSphereUsingNonLinearGeometricApproach(const Matrix3Xf& points) const;
 
   private:
 
-    SphereFittingAlgorithm d_algorithm; ///< Choice of best fit sphere algorithm.
+    SphereFittingAlgorithm _alg; ///< Choice of best fit sphere algorithm.
     
   };
   

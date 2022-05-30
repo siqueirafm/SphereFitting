@@ -1,6 +1,27 @@
-#include "SphereFitting.h"
+/** 
+ * \file SphereFittingFunctor.cpp
+ *
+ * \brief Implementation of class \c SphereFitting.
+ *
+ * \author
+ * Marcelo Ferreira Siqueira \n
+ * mfsiqueira at gmail (dot) com
+ *
+ * \version 1.0
+ * \date November 2020
+ *
+ * \attention This program is distributed WITHOUT ANY WARRANTY, and it
+ *            may be freely redistributed under the condition that the
+ *            copyright notices  are not removed,  and no compensation
+ *            is received. Private, research, and institutional use is
+ *            free. Distribution of this  code as part of a commercial
+ *            system  is permissible ONLY  BY DIRECT  ARRANGEMENT WITH
+ *            THE AUTHOR.
+ */
 
-#include "SphereFittingFunctor.h"
+#include <SphereFitting.hpp>
+
+#include <SphereFittingFunctor.hpp>
 
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
@@ -19,19 +40,19 @@ namespace MatchingTools
     // value.
     constexpr auto ZeroSingularValueThreshold = 0.00001f;
 
-    Eigen::VectorXf computeParameterValuesFromCenterAndRadius(const SphereFitting::CenterRadiusPair& i_centerRadius)
+    Eigen::VectorXf computeParameterValuesFromCenterAndRadius(const SphereFitting::CenterRadiusPair& centerRadius)
     {
       const static auto MyPi = acos(-1.f);
 
       Eigen::VectorXf values(4);
 
-      const auto centerVecNorm = i_centerRadius.center.norm();
+      const auto centerVecNorm = centerRadius.center.norm();
       assert(centerVecNorm > 0.f);
-      const auto unitCenterVec = i_centerRadius.center * (1.f / centerVecNorm);
+      const auto unitCenterVec = centerRadius.center * (1.f / centerVecNorm);
       
-      assert(i_centerRadius.radius > 0.f);
-      values(0) = 1.f / i_centerRadius.radius;
-      values(1) = centerVecNorm - i_centerRadius.radius;
+      assert(centerRadius.radius > 0.f);
+      values(0) = 1.f / centerRadius.radius;
+      values(1) = centerVecNorm - centerRadius.radius;
    
       const auto lengthProjXY = unitCenterVec.head(2).norm();
       if (lengthProjXY == 0.f)
@@ -48,15 +69,15 @@ namespace MatchingTools
       return values;      
     }
 
-    SphereFitting::CenterRadiusPair computeRadiusAndCenterFromParameterValues(const Eigen::Vector4f& i_params)
+    SphereFitting::CenterRadiusPair computeRadiusAndCenterFromParameterValues(const Eigen::Vector4f& params)
     {
-      assert(i_params(0) > 0.f);
+      assert(params(0) > 0.f);
       
-      const auto radius = 1.f / i_params(0);
+      const auto radius = 1.f / params(0);
 
-      const auto rho = i_params(1);
-      const auto phi = i_params(2);
-      const auto theta = i_params(3);
+      const auto rho = params(1);
+      const auto phi = params(2);
+      const auto theta = params(3);
       
       const auto sint = std::sin(theta);
       const auto wVec = Eigen::Vector3f(std::cos(phi) * sint, std::sin(phi) * sint, std::cos(theta));
@@ -67,23 +88,23 @@ namespace MatchingTools
     }
   }
   
-  SphereFitting::SphereFitting(SphereFittingAlgorithm i_algorithm) : d_algorithm(i_algorithm)
+  SphereFitting::SphereFitting(SphereFittingAlgorithm alg) : _alg(alg)
   {
   }
 
-  SphereFitting::CenterRadiusPair SphereFitting::run(const Matrix3Xf& i_points) const
+  SphereFitting::CenterRadiusPair SphereFitting::run(const Matrix3Xf& points) const
   {
-    if (i_points.cols() < 4)
+    if (points.cols() < 4)
       throw std::runtime_error("Number of points should be at least 4");
 
-    switch (d_algorithm)
+    switch (_alg)
     {
     case SphereFittingAlgorithm::Algebraic:
-      return fitSphereUsingAlgebraicApproach(i_points);
+      return fitSphereUsingAlgebraicApproach(points);
     case SphereFittingAlgorithm::LinearGeometric:
-      return fitSphereUsingLinearGeometricApproach(i_points);
+      return fitSphereUsingLinearGeometricApproach(points);
     case SphereFittingAlgorithm::NonLinearGeometric:
-      return fitSphereUsingNonLinearGeometricApproach(i_points);
+      return fitSphereUsingNonLinearGeometricApproach(points);
     default:
       throw std::runtime_error("Unknown choice of best fit algorithm");
     }
@@ -110,9 +131,9 @@ namespace MatchingTools
   /// The solution of this system is then used to compute the remaining unknown
   /// r.
   ///
-  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingAlgebraicApproach(const Matrix3Xf& i_points) const
+  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingAlgebraicApproach(const Matrix3Xf& points) const
   {
-    const auto numberOfPoints = i_points.cols();
+    const auto numberOfPoints = points.cols();
 
     // Square each element of the 3 x N matrix of point coordinates. 
     // 
@@ -122,7 +143,7 @@ namespace MatchingTools
     //
     // Here, a^2 denotes the result of squaring all elements of row a.
     
-    const Matrix3Xf pointsSqr = i_points.cwiseProduct(i_points);
+    const Matrix3Xf pointsSqr = points.cwiseProduct(points);
 
 
     // Computes the inner  product of every two rows of  the matrix of
@@ -134,7 +155,7 @@ namespace MatchingTools
     //
     // Here a.b denotes the inner product of rows a and b.
 
-    const Matrix3f rowColProdOne = i_points * i_points.transpose();
+    const Matrix3f rowColProdOne = points * points.transpose();
 
     
     // Computes a 3x3 matrix from the previous two:
@@ -146,7 +167,7 @@ namespace MatchingTools
     // Here  a.b^2  denotes  the  inner  product  of  row  a  and  the
     // element-wise squared row b.
 
-    const Matrix3f rowColProdTwo = i_points * pointsSqr.transpose();
+    const Matrix3f rowColProdTwo = points * pointsSqr.transpose();
 
     
     // Computes a 3x1 vector such that  the i-th element is the sum of
@@ -158,7 +179,7 @@ namespace MatchingTools
     //
     // Here, sum_a denotes the sum of all a-coordinates of the points.
 
-    const Vector3f rowSumOne = i_points.rowwise().sum();
+    const Vector3f rowSumOne = points.rowwise().sum();
 
     
     // Computes a 3x1 vector from the sum of the rows of matrix rowColProdTwo:
@@ -269,15 +290,15 @@ namespace MatchingTools
   /// x_c = q_1 / 2, y_c = q_2 / 2, z_c = q_3 / 2, and r = sqrt( q_4 + c^t c ).
   ///
   
-  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingLinearGeometricApproach(const Matrix3Xf& i_points) const
+  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingLinearGeometricApproach(const Matrix3Xf& points) const
   {
-    Eigen::Matrix4Xf matB(4, i_points.cols());
-    Eigen::VectorXf vecD(i_points.cols());
+    Eigen::Matrix4Xf matB(4, points.cols());
+    Eigen::VectorXf vecD(points.cols());
 
-    matB.topLeftCorner(3, i_points.cols()) = i_points;
+    matB.topLeftCorner(3, points.cols()) = points;
     matB.row(3).setOnes();
    
-    vecD = i_points.cwiseProduct(i_points).colwise().sum().transpose();
+    vecD = points.cwiseProduct(points).colwise().sum().transpose();
 
     Eigen::JacobiSVD<Eigen::MatrixX4f> svd(matB.transpose(), Eigen::ComputeFullV | Eigen::ComputeFullU);
     
@@ -316,20 +337,20 @@ namespace MatchingTools
   /// (unsupported module).
   ///
 
-  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingNonLinearGeometricApproach(const Matrix3Xf& i_points) const
+  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingNonLinearGeometricApproach(const Matrix3Xf& points) const
   {
     // Find initial solution using the algebraic approach.
-    auto p = fitSphereUsingAlgebraicApproach(i_points);
+    auto p = fitSphereUsingAlgebraicApproach(points);
     auto params = computeParameterValuesFromCenterAndRadius(p);
 
     // Improve  upon initial  solution by  an iterative,  minimization
     // process  conducted  by  the  Levenberg-Marquardt  algorithm  of
     // Eigen.
-    SphereFittingFunctor spFunctor(i_points);
+    SphereFittingFunctor spFunctor(points);
     Eigen::LevenbergMarquardt<SphereFittingFunctor, SphereFittingFunctor::Scalar> solver(spFunctor);
 
     // Compute the norm of the residual vector before optimization.
-    Eigen::VectorXf fResBefore(i_points.cols());
+    Eigen::VectorXf fResBefore(points.cols());
     spFunctor(params, fResBefore);
     const auto normBefore = fResBefore.norm();
 
@@ -348,7 +369,7 @@ namespace MatchingTools
     case Eigen::LevenbergMarquardtSpace::XtolTooSmall:
     case Eigen::LevenbergMarquardtSpace::GtolTooSmall:
       {
-	Eigen::VectorXf fResAfter(i_points.cols());
+	Eigen::VectorXf fResAfter(points.cols());
         spFunctor(params, fResAfter);
         const auto normAfter = fResAfter.norm();
 	

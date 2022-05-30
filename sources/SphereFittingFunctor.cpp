@@ -1,19 +1,40 @@
-#include "SphereFitting.h"
+/** 
+ * \file SphereFittingFunctor.cpp
+ *
+ * \brief A functor for using the Eigen's Levenberg-Marquardt class.
+ *
+ * \author
+ * Marcelo Ferreira Siqueira \n
+ * mfsiqueira at gmail (dot) com
+ *
+ * \version 1.0
+ * \date November 2020
+ *
+ * \attention This program is distributed WITHOUT ANY WARRANTY, and it
+ *            may be freely redistributed under the condition that the
+ *            copyright notices  are not removed,  and no compensation
+ *            is received. Private, research, and institutional use is
+ *            free. Distribution of this  code as part of a commercial
+ *            system  is permissible ONLY  BY DIRECT  ARRANGEMENT WITH
+ *            THE AUTHOR.
+ */
 
-#include "SphereFittingFunctor.h"
+#include <SphereFitting.hpp>
+
+#include <SphereFittingFunctor.hpp>
 
 #include <algorithm>
 #include <cmath>
 
 namespace MatchingTools
 {  
-  SphereFittingFunctor::SphereFittingFunctor(const Matrix3Xf& i_points) :
-    LMFunctor<float>(4, i_points.cols()),  points(i_points)
+  SphereFittingFunctor::SphereFittingFunctor(const Matrix3Xf& points) :
+    LMFunctor<float>(4, points.cols()),  _points(points)
   {}
 
-  int SphereFittingFunctor::operator()(const VectorXf &i_pVals, VectorXf &o_fRes) const
+  int SphereFittingFunctor::operator()(const VectorXf &pVals, VectorXf &fRes) const
   {
-    assert(o_fRes.rows() == points.cols());
+    assert(fRes.rows() == _points.cols());
     
     // Each member function  of the residual function f :  R^n --> R^m
     // implemented below is an approximation to the Euclidean distance
@@ -46,33 +67,33 @@ namespace MatchingTools
     //
     // is the i-th point of the set to which the sphere is fitted.
 	
-    const auto kappa = i_pVals(0);    
-    const auto rho = i_pVals(1);
-    const auto phi = i_pVals(2);
-    const auto theta = i_pVals(3);
+    const auto kappa = pVals(0);    
+    const auto rho = pVals(1);
+    const auto phi = pVals(2);
+    const auto theta = pVals(3);
 
     const auto sint = std::sin(theta);
     const auto wVec = Eigen::Vector3f(std::cos(phi) * sint, std::sin(phi) * sint, std::cos(theta));
-    for (Eigen::Index i = 0; i < o_fRes.rows(); ++i)
+    for (Eigen::Index i = 0; i < fRes.rows(); ++i)
     {
-       const Eigen::Vector3f qVec = points.col(i) - (rho * wVec);
+       const Eigen::Vector3f qVec = _points.col(i) - (rho * wVec);
        const auto qqDot = qVec.dot(qVec);
        const auto qwDot = qVec.dot(wVec);
-       o_fRes(i) = 0.5 * kappa * qqDot - qwDot;
+       fRes(i) = 0.5 * kappa * qqDot - qwDot;
     }
 	
     return 0;
   }
 
-  int SphereFittingFunctor::df(const VectorXf &i_pVals, MatrixXf &o_fJac) const
+  int SphereFittingFunctor::df(const VectorXf &pVals, MatrixXf &fJac) const
   {
-    assert(o_fJac.rows() == points.cols());
-    assert(o_fJac.cols() == i_pVals.rows());
+    assert(fJac.rows() == _points.cols());
+    assert(fJac.cols() == pVals.rows());
     
-    const auto kappa = i_pVals(0);    
-    const auto rho = i_pVals(1);
-    const auto phi = i_pVals(2);
-    const auto theta = i_pVals(3);
+    const auto kappa = pVals(0);    
+    const auto rho = pVals(1);
+    const auto phi = pVals(2);
+    const auto theta = pVals(3);
 
     const auto sinp = std::sin(phi);
     const auto cosp = std::cos(phi);
@@ -89,11 +110,11 @@ namespace MatchingTools
     const auto dqVecdTheta = -rho * dwVecdTheta;
     const auto dotTheta = dqVecdTheta.dot(wVec);
 
-    for (Eigen::Index i = 0; i < o_fJac.rows(); ++i)
+    for (Eigen::Index i = 0; i < fJac.rows(); ++i)
     {
        Eigen::Vector4f gradVec;
 	     
-       const Eigen::Vector3f qVec = points.col(i) - (rho * wVec);
+       const Eigen::Vector3f qVec = _points.col(i) - (rho * wVec);
        
        // Evaluate 1st-order partial derivative with respect to radius.
        gradVec(0) = qVec.dot(qVec);
@@ -107,7 +128,7 @@ namespace MatchingTools
        // Evaluate 1st-order partial derivative with respect to theta.
        gradVec(3) = kappa * qVec.dot(dqVecdTheta) - (dotTheta + qVec.dot(dwVecdTheta));
 
-       o_fJac.block(i, 0, 1, 4) = gradVec.transpose();
+       fJac.block(i, 0, 1, 4) = gradVec.transpose();
     }
 
     return 0;

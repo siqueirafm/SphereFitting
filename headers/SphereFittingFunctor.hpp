@@ -1,5 +1,26 @@
 #pragma once
 
+/** 
+ * \file SphereFittingFunctor.hpp
+ *
+ * \brief A functor for using the Eigen's Levenberg-Marquardt class.
+ *
+ * \author
+ * Marcelo Ferreira Siqueira \n
+ * mfsiqueira at gmail (dot) com
+ *
+ * \version 1.0
+ * \date November 2020
+ *
+ * \attention This program is distributed WITHOUT ANY WARRANTY, and it
+ *            may be freely redistributed under the condition that the
+ *            copyright notices  are not removed,  and no compensation
+ *            is received. Private, research, and institutional use is
+ *            free. Distribution of this  code as part of a commercial
+ *            system  is permissible ONLY  BY DIRECT  ARRANGEMENT WITH
+ *            THE AUTHOR.
+ */
+
 #include <Eigen/Core>
 
 namespace MatchingTools
@@ -47,16 +68,16 @@ namespace MatchingTools
     using MatrixXf = Eigen::MatrixXf;
     using VectorXf = Eigen::VectorXf;
       
-    Matrix3Xf points;  ///< Set of points the sphere is supposed to fit.
+    Matrix3Xf _points;  ///< Set of points the sphere is supposed to fit.
 
-    explicit SphereFittingFunctor(const Matrix3Xf& i_points);
+    explicit SphereFittingFunctor(const Matrix3Xf& points);
       
     /*
      * Evaluates the  residual function f :  R^n --> R^m at  a given
      * set of parameter values, where  n is the number of parameters
      * of the model, and m is the number of points.
      */
-    int operator()(const VectorXf &i_pVals, VectorXf &o_fRes) const;
+    int operator()(const VectorXf &pVals, VectorXf &fRes) const;
 
     /*
      * Evaluates the 1st-order differential df  : R^n --> R^m of the
@@ -64,7 +85,7 @@ namespace MatchingTools
      * values, where n is the number of parameters of the model, and
      * m is the number of points.
      */
-    int df(const VectorXf &i_pVals, MatrixXf &o_fJac) const;
+    int df(const VectorXf &pVals, MatrixXf &fJac) const;
   };
 
 }
