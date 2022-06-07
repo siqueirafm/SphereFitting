@@ -6,13 +6,14 @@ A class to fit a sphere to a set of points in space. Unit tests for the class ar
 
 The code is organized as follows:  
 
-* headers     - subdirectory containing the HPP source files  
-* include     - subdirectory where gtest headers files will be after code is built (initially empty)  
-* lib         - subdirectory where gtest lib files will be after code is built (initially empty)  
-* LICENSE.md  - license file  
-* README.md   - this file  
-* sources     - subdirectory containing the CPP source files  
-* tst         - subdirectory where the executable with the unit tests will be after the code is built  
+* headers        - subdirectory containing the HPP source files  
+* include        - subdirectory where gtest headers files will be after code is built (initially empty)  
+* lib            - subdirectory where gtest lib files will be after code is built (initially empty)  
+* LICENSE.md     - license file  
+* README.md      - this file  
+* sources        - subdirectory containing the CPP source files  
+* tst            - subdirectory where the executable with the unit tests will be after the code is built
+* CMakeLists.txt - Input to the CMake build system
 
 The fiiting algorithms implemented in the class come from the following papers:
 
@@ -36,17 +37,16 @@ CMake will also download and install the GTest library automatically from [here]
 
 To install, follow the following steps:
 
-* Create a subdirectory named build under directory SphereFitting  
-* Enter subdirectory build  
-* Run cmake .. -DCMAKE_INSTALL_PREFIX=[full path to directory SphereFitting]
-* Run make
-* Run make install
+* Enter directory SphereFitting  
+* Run cmake -S . -B build
+* Run cmake --build build
+* Run cmake --install build --prefix [full path to your directory SphereFitting]
 
 If all goes well, then you should see an executable inside subdirectory tst.  
 
 If CMake fails to find Eigen, then provide the path to the Eigen directory:
 
-* Run cmake .. -DCMAKE_INSTALL_PREFIX=[full path to directory SphereFitting] -DEIGEN3_INCLUDE_DIR=[full path to the Eigen library]
+* Run cmake -S . -B build -DEIGEN3_INCLUDE_DIR=[full path to the Eigen library]
 
 ##  LAST UPDATE
 
