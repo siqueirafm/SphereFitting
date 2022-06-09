@@ -17,10 +17,15 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endif()
 
-find_package(Eigen3 3.3 REQUIRED CONFIG)
+find_package(Eigen3 3.3 QUIET CONFIG)
 
 if (TARGET Eigen3::Eigen)
   message(STATUS "Eigen3 v${EIGEN3_VERSION_STRING} found in ${EIGEN3_INCLUDE_DIR}")
+else()
+  if (NOT EIGEN3_INCLUDE_DIR)
+    message( FATAL_ERROR "Please, set variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
+  endif()
+  include_directories("${EIGEN3_INCLUDE_DIR}")
 endif()
 
 set (SPHEREFITTINGTEST_INC ${CMAKE_CURRENT_SOURCE_DIR}/headers)
