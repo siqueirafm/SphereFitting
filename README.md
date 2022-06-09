@@ -12,8 +12,8 @@ The code is organized as follows:
 * LICENSE.md     - license file  
 * README.md      - this file  
 * sources        - subdirectory containing the CPP source files  
-* tst            - subdirectory where the executable with the unit tests will be after the code is built
-* CMakeLists.txt - Input to the CMake build system
+* tst            - subdirectory where the executable with the unit tests will be after the code is built  
+* CMakeLists.txt - Input to the CMake build system  
 
 The fiiting algorithms implemented in the class come from the following papers:
 
@@ -31,7 +31,7 @@ Proceedings of the ECCV'98, LNCS, v. 1406,  Springer, Berlin, Heidelberg, 1998.
 
 ## INSTALLATION  
 
-You need to install CMake 3.1 or higher and Eigen 3.3 or higher prior to building the code.
+You need to install CMake 3.15 or higher and Eigen 3.3 or higher prior to building the code.
 CMake will then try to find Eigen automatically. If it fails to do so, please provide the path to the Eigen library using CMake variable.
 CMake will also download and install the GTest library automatically from [here](https://github.com/google/googletest/).  
 
@@ -39,7 +39,7 @@ To install, follow the following steps:
 
 * Enter directory SphereFitting  
 * Run cmake -S . -B build
-* Run cmake --build build
+* Run cmake --build build --config Release
 * Run cmake --install build --prefix [full path to your directory SphereFitting]
 
 If all goes well, then you should see an executable inside subdirectory tst.  
