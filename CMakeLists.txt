@@ -2,11 +2,20 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(SphereFittingTest LANGUAGES CXX)
 
+message (STATUS "CMAKE_CURRENT_SOURCE_DIR is ${CMAKE_CURRENT_SOURCE_DIR}")
+
 if (NOT CMAKE_BUILD_TYPE)
-  set (CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+  message (STATUS "Setting build type to 'Release' as none was specified")
+  set (CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build" FORCE)
 endif()
 
 message (STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message (STATUS "Generated with config types: ${CMAKE_CONFIGURATION_TYPES}")
+
+# enable folders for projects in Visual Studio
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
 
 find_package(Eigen3 3.3 REQUIRED CONFIG)
 
