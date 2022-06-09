@@ -38,49 +38,49 @@ namespace MatchingTools
     // A singular value is considered zero  if its value is no greater
     // than  threshold times  the largest  singular value  in absolute
     // value.
-    constexpr auto ZeroSingularValueThreshold = 0.00001f;
+    constexpr auto ZeroSingularValueThreshold = 0.00001;
 
-    Eigen::VectorXf computeParameterValuesFromCenterAndRadius(const SphereFitting::CenterRadiusPair& centerRadius)
+    Eigen::VectorXd computeParameterValuesFromCenterAndRadius(const SphereFitting::CenterRadiusPair& centerRadius)
     {
-      const static auto MyPi = acos(-1.f);
+      const static auto MyPi = acos(-1.0);
 
-      Eigen::VectorXf values(4);
+      Eigen::VectorXd values(4);
 
       const auto centerVecNorm = centerRadius.center.norm();
-      assert(centerVecNorm > 0.f);
-      const auto unitCenterVec = centerRadius.center * (1.f / centerVecNorm);
+      assert(centerVecNorm > 0.0);
+      const auto unitCenterVec = centerRadius.center * (1.0 / centerVecNorm);
       
-      assert(centerRadius.radius > 0.f);
-      values(0) = 1.f / centerRadius.radius;
+      assert(centerRadius.radius > 0.0);
+      values(0) = 1.0 / centerRadius.radius;
       values(1) = centerVecNorm - centerRadius.radius;
    
       const auto lengthProjXY = unitCenterVec.head(2).norm();
-      if (lengthProjXY == 0.f)
-        values(2) = 0.f;
-      else if (unitCenterVec(0) >= 0.f)
+      if (lengthProjXY == 0.0)
+        values(2) = 0.0;
+      else if (unitCenterVec(0) >= 0.0)
       {
-        values(2) = std::asin(unitCenterVec(1) / lengthProjXY) + (unitCenterVec(1) >= 0.f ? 0 : 2.f * MyPi);
+        values(2) = std::asin(unitCenterVec(1) / lengthProjXY) + (unitCenterVec(1) >= 0.0 ? 0.0 : 2.0 * MyPi);
       }
       else
         values(2) = MyPi - std::asin(unitCenterVec(1) / lengthProjXY);
     
-      values(3) = std::acos(std::clamp(unitCenterVec(2), -1.f, 1.f));
+      values(3) = std::acos(std::clamp(unitCenterVec(2), -1.0, 1.0));
 
       return values;      
     }
 
-    SphereFitting::CenterRadiusPair computeRadiusAndCenterFromParameterValues(const Eigen::Vector4f& params)
+    SphereFitting::CenterRadiusPair computeRadiusAndCenterFromParameterValues(const Eigen::Vector4d& params)
     {
-      assert(params(0) > 0.f);
+      assert(params(0) > 0.0);
       
-      const auto radius = 1.f / params(0);
+      const auto radius = 1.0 / params(0);
 
       const auto rho = params(1);
       const auto phi = params(2);
       const auto theta = params(3);
       
       const auto sint = std::sin(theta);
-      const auto wVec = Eigen::Vector3f(std::cos(phi) * sint, std::sin(phi) * sint, std::cos(theta));
+      const auto wVec = Eigen::Vector3d(std::cos(phi) * sint, std::sin(phi) * sint, std::cos(theta));
 
       const auto center = (radius + rho) * wVec;
 
@@ -92,7 +92,7 @@ namespace MatchingTools
   {
   }
 
-  SphereFitting::CenterRadiusPair SphereFitting::run(const Matrix3Xf& points) const
+  SphereFitting::CenterRadiusPair SphereFitting::run(const Matrix3Xd& points) const
   {
     if (points.cols() < 4)
       throw std::runtime_error("Number of points should be at least 4");
@@ -108,8 +108,6 @@ namespace MatchingTools
     default:
       throw std::runtime_error("Unknown choice of best fit algorithm");
     }
-    
-    return {};
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -131,7 +129,7 @@ namespace MatchingTools
   /// The solution of this system is then used to compute the remaining unknown
   /// r.
   ///
-  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingAlgebraicApproach(const Matrix3Xf& points) const
+  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingAlgebraicApproach(const Matrix3Xd& points) const
   {
     const auto numberOfPoints = points.cols();
 
@@ -143,7 +141,7 @@ namespace MatchingTools
     //
     // Here, a^2 denotes the result of squaring all elements of row a.
     
-    const Matrix3Xf pointsSqr = points.cwiseProduct(points);
+    const Matrix3Xd pointsSqr = points.cwiseProduct(points);
 
 
     // Computes the inner  product of every two rows of  the matrix of
@@ -155,7 +153,7 @@ namespace MatchingTools
     //
     // Here a.b denotes the inner product of rows a and b.
 
-    const Matrix3f rowColProdOne = points * points.transpose();
+    const Matrix3d rowColProdOne = points * points.transpose();
 
     
     // Computes a 3x3 matrix from the previous two:
@@ -167,7 +165,7 @@ namespace MatchingTools
     // Here  a.b^2  denotes  the  inner  product  of  row  a  and  the
     // element-wise squared row b.
 
-    const Matrix3f rowColProdTwo = points * pointsSqr.transpose();
+    const Matrix3d rowColProdTwo = points * pointsSqr.transpose();
 
     
     // Computes a 3x1 vector such that  the i-th element is the sum of
@@ -179,7 +177,7 @@ namespace MatchingTools
     //
     // Here, sum_a denotes the sum of all a-coordinates of the points.
 
-    const Vector3f rowSumOne = points.rowwise().sum();
+    const Vector3d rowSumOne = points.rowwise().sum();
 
     
     // Computes a 3x1 vector from the sum of the rows of matrix rowColProdTwo:
@@ -188,7 +186,7 @@ namespace MatchingTools
     // rowSumTwo = | y.x^2 + y.y^2 + y.z^2 |
     //             | z.x^2 + z.y^2 + z.z^2 |
 
-    const Vector3f rowSumTwo = rowColProdTwo.rowwise().sum();
+    const Vector3d rowSumTwo = rowColProdTwo.rowwise().sum();
 
     
     // Computes the outer product of vector rowSumOne with itself:
@@ -199,7 +197,7 @@ namespace MatchingTools
     //
     // Here, sum_a denotes the sum of all a-coordinates of the points.
 
-    const Matrix3f rowSumOneOuterProd = rowSumOne * rowSumOne.transpose();
+    const Matrix3d rowSumOneOuterProd = rowSumOne * rowSumOne.transpose();
 
 
     // Create matrix A and vector b
@@ -218,24 +216,24 @@ namespace MatchingTools
     //
     // S is the sum of the main diagonal of matrix 'rowColProdOne'.
 
-    const float scaleFactor = rowColProdOne.diagonal().sum();
-    const Matrix3f matA = 2 * (rowSumOneOuterProd - numberOfPoints * rowColProdOne);
-    const Vector3f vecB = -numberOfPoints * rowSumTwo + scaleFactor * rowSumOne;
+    const double scaleFactor = rowColProdOne.diagonal().sum();
+    const Matrix3d matA = 2.0 * (rowSumOneOuterProd - numberOfPoints * rowColProdOne);
+    const Vector3d vecB = -numberOfPoints * rowSumTwo + scaleFactor * rowSumOne;
 
     //
     // Solve A x = b
     //  
-    const Vector3f center = matA.colPivHouseholderQr().solve(vecB);
+    const Vector3d center = matA.colPivHouseholderQr().solve(vecB);
 
  
     //
     // Compute the radius of the sphere using the center coordinates.
     //
-    const float ctc = center.transpose() * center;
-    const float cts = center.transpose() * rowSumOne;
+    const double ctc = center.transpose() * center;
+    const double cts = center.transpose() * rowSumOne;
 
-    const auto radiusSqr = ctc + (scaleFactor - 2.f * cts) / numberOfPoints;
-    assert(radiusSqr >= 0.f);
+    const auto radiusSqr = ctc + (scaleFactor - 2.0 * cts) / numberOfPoints;
+    assert(radiusSqr >= 0.0);
 
     return {center, std::sqrt(radiusSqr) };
   }
@@ -290,25 +288,25 @@ namespace MatchingTools
   /// x_c = q_1 / 2, y_c = q_2 / 2, z_c = q_3 / 2, and r = sqrt( q_4 + c^t c ).
   ///
   
-  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingLinearGeometricApproach(const Matrix3Xf& points) const
+  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingLinearGeometricApproach(const Matrix3Xd& points) const
   {
-    Eigen::Matrix4Xf matB(4, points.cols());
-    Eigen::VectorXf vecD(points.cols());
+    Eigen::Matrix4Xd matB(4, points.cols());
+    Eigen::VectorXd vecD(points.cols());
 
     matB.topLeftCorner(3, points.cols()) = points;
     matB.row(3).setOnes();
    
     vecD = points.cwiseProduct(points).colwise().sum().transpose();
 
-    Eigen::JacobiSVD<Eigen::MatrixX4f> svd(matB.transpose(), Eigen::ComputeFullV | Eigen::ComputeFullU);
+    Eigen::JacobiSVD<Eigen::MatrixX4d> svd(matB.transpose(), Eigen::ComputeFullV | Eigen::ComputeFullU);
     
     svd.setThreshold(ZeroSingularValueThreshold);
     assert(svd.rank() == 4);
 
-    Eigen::Vector4f vecY = svd.solve(vecD);
+    Eigen::Vector4d vecY = svd.solve(vecD);
 
     SphereFitting::CenterRadiusPair p;
-    p.center = 0.5f * vecY.head(3);
+    p.center = 0.5 * vecY.head(3);
     p.radius = std::sqrt(vecY(3) + p.center.transpose() * p.center);
 
     return p;
@@ -337,7 +335,7 @@ namespace MatchingTools
   /// (unsupported module).
   ///
 
-  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingNonLinearGeometricApproach(const Matrix3Xf& points) const
+  SphereFitting::CenterRadiusPair SphereFitting::fitSphereUsingNonLinearGeometricApproach(const Matrix3Xd& points) const
   {
     // Find initial solution using the algebraic approach.
     auto p = fitSphereUsingAlgebraicApproach(points);
@@ -350,7 +348,7 @@ namespace MatchingTools
     Eigen::LevenbergMarquardt<SphereFittingFunctor, SphereFittingFunctor::Scalar> solver(spFunctor);
 
     // Compute the norm of the residual vector before optimization.
-    Eigen::VectorXf fResBefore(points.cols());
+    Eigen::VectorXd fResBefore(points.cols());
     spFunctor(params, fResBefore);
     const auto normBefore = fResBefore.norm();
 
@@ -369,7 +367,7 @@ namespace MatchingTools
     case Eigen::LevenbergMarquardtSpace::XtolTooSmall:
     case Eigen::LevenbergMarquardtSpace::GtolTooSmall:
       {
-	Eigen::VectorXf fResAfter(points.cols());
+	Eigen::VectorXd fResAfter(points.cols());
         spFunctor(params, fResAfter);
         const auto normAfter = fResAfter.norm();
 	

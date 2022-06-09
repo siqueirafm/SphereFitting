@@ -28,11 +28,11 @@
 
 namespace MatchingTools
 {  
-  SphereFittingFunctor::SphereFittingFunctor(const Matrix3Xf& points) :
-    LMFunctor<float>(4, points.cols()),  _points(points)
+  SphereFittingFunctor::SphereFittingFunctor(const Matrix3Xd& points) :
+    LMFunctor<double>(4, points.cols()),  _points(points)
   {}
 
-  int SphereFittingFunctor::operator()(const VectorXf &pVals, VectorXf &fRes) const
+  int SphereFittingFunctor::operator()(const VectorXd &pVals, VectorXd &fRes) const
   {
     assert(fRes.rows() == _points.cols());
     
@@ -73,10 +73,10 @@ namespace MatchingTools
     const auto theta = pVals(3);
 
     const auto sint = std::sin(theta);
-    const auto wVec = Eigen::Vector3f(std::cos(phi) * sint, std::sin(phi) * sint, std::cos(theta));
+    const auto wVec = Eigen::Vector3d(std::cos(phi) * sint, std::sin(phi) * sint, std::cos(theta));
     for (Eigen::Index i = 0; i < fRes.rows(); ++i)
     {
-       const Eigen::Vector3f qVec = _points.col(i) - (rho * wVec);
+       const Eigen::Vector3d qVec = _points.col(i) - (rho * wVec);
        const auto qqDot = qVec.dot(qVec);
        const auto qwDot = qVec.dot(wVec);
        fRes(i) = 0.5 * kappa * qqDot - qwDot;
@@ -85,7 +85,7 @@ namespace MatchingTools
     return 0;
   }
 
-  int SphereFittingFunctor::df(const VectorXf &pVals, MatrixXf &fJac) const
+  int SphereFittingFunctor::df(const VectorXd &pVals, MatrixXd &fJac) const
   {
     assert(fJac.rows() == _points.cols());
     assert(fJac.cols() == pVals.rows());
@@ -100,27 +100,27 @@ namespace MatchingTools
     const auto sint = std::sin(theta);
     const auto cost = std::cos(theta);
 
-    const auto wVec = Eigen::Vector3f(cosp * sint, sinp * sint, cost);
+    const auto wVec = Eigen::Vector3d(cosp * sint, sinp * sint, cost);
 
-    const auto dwVecdPhi = Eigen::Vector3f(-sinp * sint, cosp * sint, 0.f);
+    const auto dwVecdPhi = Eigen::Vector3d(-sinp * sint, cosp * sint, 0.0);
     const auto dqVecdPhi = -rho * dwVecdPhi;
     const auto dotPhi = dqVecdPhi.dot(wVec);
 
-    const auto dwVecdTheta = Eigen::Vector3f(cosp * cost, sinp * cost, -sint);
+    const auto dwVecdTheta = Eigen::Vector3d(cosp * cost, sinp * cost, -sint);
     const auto dqVecdTheta = -rho * dwVecdTheta;
     const auto dotTheta = dqVecdTheta.dot(wVec);
 
     for (Eigen::Index i = 0; i < fJac.rows(); ++i)
     {
-       Eigen::Vector4f gradVec;
+       Eigen::Vector4d gradVec;
 	     
-       const Eigen::Vector3f qVec = _points.col(i) - (rho * wVec);
+       const Eigen::Vector3d qVec = _points.col(i) - (rho * wVec);
        
        // Evaluate 1st-order partial derivative with respect to radius.
        gradVec(0) = qVec.dot(qVec);
 
        // Evaluate 1st-order partial derivative with respect to rho.
-       gradVec(1) = 1.f - kappa * qVec.dot(wVec);
+       gradVec(1) = 1.0 - kappa * qVec.dot(wVec);
 
        // Evaluate 1st-order partial derivative with respect to phi.
        gradVec(2) = kappa * qVec.dot(dqVecdPhi) - (dotPhi + qVec.dot(dwVecdPhi));
