@@ -42,18 +42,17 @@ namespace MatchingTools
     using ValueType = Eigen::Matrix<Scalar, ValuesAtCompileTime, 1>;
     using JacobianType = Eigen::Matrix<Scalar, ValuesAtCompileTime, InputsAtCompileTime>;
     
-    int numberOfInputs;  ///< This is equivalent to the dimension of the range of the residual function
-    int numberOfValues;  ///< This is equivalent to the dimension of the domain of the residual function
+    Eigen::Index numberOfInputs;  ///< This is equivalent to the dimension of the range of the residual function
+    Eigen::Index numberOfValues;  ///< This is equivalent to the dimension of the domain of the residual function
 
     LMFunctor() : numberOfInputs(InputsAtCompileTime), numberOfValues(ValuesAtCompileTime)
     {}
     
-    LMFunctor(int n, int m) : numberOfInputs(n), numberOfValues(m)
+    LMFunctor(Eigen::Index n, Eigen::Index m) : numberOfInputs(n), numberOfValues(m)
     {}
 
-    int inputs() const { return numberOfInputs; }
-    
-    int values() const { return numberOfValues; }
+    Eigen::Index inputs() const { return numberOfInputs; }
+    Eigen::Index values() const { return numberOfValues; }
   };
 
   /**
@@ -62,22 +61,22 @@ namespace MatchingTools
    * differential.  This struct  defines a  functor with  the required
    * information.
    */
-  struct SphereFittingFunctor : LMFunctor<float>
+  struct SphereFittingFunctor : LMFunctor<double>
   {
-    using Matrix3Xf = Eigen::Matrix3Xf;
-    using MatrixXf = Eigen::MatrixXf;
-    using VectorXf = Eigen::VectorXf;
+    using Matrix3Xd = Eigen::Matrix3Xd;
+    using MatrixXd = Eigen::MatrixXd;
+    using VectorXd = Eigen::VectorXd;
       
-    Matrix3Xf _points;  ///< Set of points the sphere is supposed to fit.
+    Matrix3Xd _points;  ///< Set of points the sphere is supposed to fit.
 
-    explicit SphereFittingFunctor(const Matrix3Xf& points);
+    explicit SphereFittingFunctor(const Matrix3Xd& points);
       
     /*
      * Evaluates the  residual function f :  R^n --> R^m at  a given
      * set of parameter values, where  n is the number of parameters
      * of the model, and m is the number of points.
      */
-    int operator()(const VectorXf &pVals, VectorXf &fRes) const;
+    int operator()(const VectorXd &pVals, VectorXd &fRes) const;
 
     /*
      * Evaluates the 1st-order differential df  : R^n --> R^m of the
@@ -85,7 +84,7 @@ namespace MatchingTools
      * values, where n is the number of parameters of the model, and
      * m is the number of points.
      */
-    int df(const VectorXf &pVals, MatrixXf &fJac) const;
+    int df(const VectorXd &pVals, MatrixXd &fJac) const;
   };
 
 }

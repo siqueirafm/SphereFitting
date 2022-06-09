@@ -61,8 +61,8 @@ namespace MatchingTools
   class SphereFitting
   {
   public:
-    using Matrix3Xf = Eigen::Matrix3Xf;
-    using Vector3f = Eigen::Vector3f;
+    using Matrix3Xd = Eigen::Matrix3Xd;
+    using Vector3d = Eigen::Vector3d;
   
     /**
      * \struct  CenterRadiusPair 
@@ -71,7 +71,7 @@ namespace MatchingTools
      */
     struct CenterRadiusPair
     {
-      Vector3f center;  ///< Center of the best fitted sphere
+      Vector3d center;  ///< Center of the best fitted sphere
       double radius;    ///< Radius of the best fitted sphere
     };
 
@@ -93,19 +93,19 @@ namespace MatchingTools
      * \return Center and radius of a sphere that best fits the points
      * according to the best fit criterion of the chosen algorithm.
      */
-    CenterRadiusPair run(const Matrix3Xf& points) const;
+    CenterRadiusPair run(const Matrix3Xd& points) const;
 
   private:
-    using Matrix3f = Eigen::Matrix3f;
+    using Matrix3d = Eigen::Matrix3d;
     
     /** Computes a best sphere fitting using an algebraic approach. */
-    CenterRadiusPair fitSphereUsingAlgebraicApproach(const Matrix3Xf& points) const;
+    CenterRadiusPair fitSphereUsingAlgebraicApproach(const Matrix3Xd& points) const;
 
     /** Computes a best sphere fitting using a linear geometric approach. */
-    CenterRadiusPair fitSphereUsingLinearGeometricApproach(const Matrix3Xf& points) const;
+    CenterRadiusPair fitSphereUsingLinearGeometricApproach(const Matrix3Xd& points) const;
 
     /** Computes a best sphere fitting using a nonlinear geometric approach. */
-    CenterRadiusPair fitSphereUsingNonLinearGeometricApproach(const Matrix3Xf& points) const;
+    CenterRadiusPair fitSphereUsingNonLinearGeometricApproach(const Matrix3Xd& points) const;
 
   private:
 
